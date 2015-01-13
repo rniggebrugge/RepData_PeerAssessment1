@@ -26,3 +26,99 @@ output:
 
 
 
+
+
+```{r libraries}
+library(lubridate)
+library(stringr)
+library(dplyr)
+library(lattice)
+```
+Load data and store it in data.frame *df*
+
+```{r}
+df <- read.csv("/home/remco/Desktop/data/activity.csv")
+
+str(df)
+```
+
+Now change the *interval* column from numeric to character.  
+After that leading zeros are added so date-time stamps can be calculated.
+
+```{r}
+df$interval2 <- str_pad(df$interval,4,pad="0")
+str(df)
+```
+
+Now using the *date* column and the reformatted *interval* column, a datetime value can be calculated. For this we use **ymd_hm** from the **lubridate** library.
+
+```{r}
+library(lubridate)
+df$datetime <- ymd_hm(paste(df$date,df$interval2, sep=" "))
+
+str(df)
+```
+
+```{r}
+days <- group_by(df, date)
+steps_per_day <-summarize( days, steps = sum(steps, na.rm=TRUE))
+hist(steps_per_day$steps, breaks=30)
+
+mean(steps_per_day$steps)
+median(steps_per_day$steps)
+
+
+intervals <- group_by(df, interval)
+activity <- summarize(intervals, steps = mean(steps, na.rm=TRUE))
+with(activity, plot(interval, steps, type="l"))
+
+head(arrange(activity,-steps),5)
+
+missing<-is.na(df)
+apply(missing,2, sum)
+
+# use activity to replace missing values with mean values
+
+get_mean_steps <- function(interval){
+        avg <- activity[activity$interval==interval,2]
+        avg
+}
+
+
+df2<-df
+
+for(i in 1:dim(df2)[1]){
+        if(is.na(df2[i,1])) df2[i,1] <- get_mean_steps(df2[i,3])
+}
+
+
+
+str(df2)
+
+days <- group_by(df2, date)
+steps_per_day <-summarize( days, steps = sum(steps, na.rm=TRUE))
+hist(steps_per_day$steps, breaks=30)
+
+mean(steps_per_day$steps)
+median(steps_per_day$steps)
+
+df2$day <- weekdays(df2$datetime)
+df2  <- mutate(df2, day = factor(1*(day=="Sunday" | day=="Saturday"),
+                                     labels = c("weekday","weekend")))
+
+
+intervals2 <- group_by(df2, interval)
+activity2 <- summarize(intervals2, steps = mean(steps))
+
+plot(activity$interval, activity$steps, type="l")
+with(activity2, xyplot(  steps ~ interval, type="l"))
+
+
+head(arrange(activity,-steps),5)
+head(arrange(activity2,-steps),5)
+
+
+```
+
+
+
