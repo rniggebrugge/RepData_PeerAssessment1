@@ -89,7 +89,7 @@ head( arrange( activity, -steps) , 3 )
 ## Imputing missing values
 
 
-First <NA> values are in the data.frame:
+**1.** We make a new dataset to get an overview of all the <NA> values are in the data.frame. By summing over the columns (this can be done as TRUE is evaluated to numeric 1, FALSE to 0) we see how many values are missing per column.
 
 ```{r counting_missing}
 
@@ -102,5 +102,31 @@ na_sum
 It follows that only the *steps* value has missing values, this should not come as a surprise as this is the only measurement! A total number of `r na_sum[1]` measurements
 are missing.
 
+**2.** Though missing values could correspond with inactivity, and therefore a count of 0 zero steps, the large number of such missing values makes it more likely they are caused by some malfunctioning of the device. In the code below the missing *steps* values are replaced by the average number of steps for identical intervals. We will first create a new dataset, copying the contents of the original ones (including processing of that original dataset), and then fill in missing values. 
 
+```{r filling_missing}
+
+d_filled <- d
+
+for(i in 1:dim(d_filled)[1]){
+        if(is.na(d_filled[i,]$steps)){
+                d_filled[i,]$steps <- activity[activity$interval==d_filled[i,]$interval,]$steps
+        }
+}
+
+str(d_filled)
+
+
+```
 ## Are there differences in activity patterns between weekdays and weekends?
+
+```{r weekend-week-patterns}
+
+day_interval <- group_by(d_filled, day, interval)
+head(day_interval)
+spd <- summarize(day_interval, steps = mean(steps))
+
+
+with(spd, xyplot(steps ~ interval | day, type="l",layout=c(1,2)))
+
+```
