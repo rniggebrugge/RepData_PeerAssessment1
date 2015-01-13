@@ -8,25 +8,25 @@ output:
 
 ## Loading and preprocessing the data
 
-
+here text should follow
 
 ## What is mean total number of steps taken per day?
 
-
+and here
 
 ## What is the average daily activity pattern?
 
-
+and here
 
 ## Imputing missing values
 
-
+and here
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
+and here
 
-
-
+---> all from here needs to be replaces!!!!!
 
 ```{r libraries}
 library(lubridate)
