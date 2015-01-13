@@ -93,7 +93,7 @@ for(i in 1:dim(df2)[1]){
 
 
 
-str(df2)
+str(df2)str(d
 
 days <- group_by(df2, date)
 steps_per_day <-summarize( days, steps = sum(steps, na.rm=TRUE))
@@ -120,5 +120,23 @@ head(arrange(activity2,-steps),5)
 
 ```
 
+d$corrected_steps <- d$steps
+for (i in 1:dim(d)[1]){
+  if(is.na(d[i,]$steps)){
+    d[i,]$corrected_steps <- acs[acs$interval==d[i,]$interval,]$steps
+  }
+}
+
+ints <- group_by(d, interval)
+pp <- summarize(ints, steps = mean(steps, na.rm=TRUE), steps_corrected = mean(corrected_steps))
+head(pp)
+d$day <- weekdays(d$datetime)
+head(d)
+d <- mutate(d, day = factor(1*(day=="Saturday" | day=="Sunday"), labels=c("weekday","weekend")))
+head(d)
+day_interval <- group_by(d, day, interval)
+head(day_interval)
+spd <- summarize(day_interval, steps = mean(corrected_steps))
 
 
+with(spd, xyplot(steps ~ interval | day, type="l",layout=c(1,2)))
